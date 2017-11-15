@@ -2,6 +2,7 @@
 
 import sys
 import os
+import shutil
 import getopt
 import yaml
 import tarfile
@@ -20,19 +21,23 @@ def getHelp(command_name):
     return help_string
 
 def validateConfiguration(configuration):
+    # No empty configuration file
     if configuration is None:
         raise Exception("Empty configuration.")
 
+    # artifacts
     if not "artifacts" in configuration:
         raise Exception("Missing \"artifact\" node.")
     if not isinstance(configuration["artifacts"], list):
         raise Exception("Please provide a list of paths in the \"artifact\" node.")
 
+    # delete_old_backups
     if not "delete_old_backups" in configuration:
         configuration["delete_old_backups"] = False
     elif configuration["delete_old_backups"] and not "backup_dir" in configuration:
         raise Exception("\"delete_old_backups\" is set to true, but there is no \"backup_dir\".")
 
+    # backup_dir
     if not "backup_dir" in configuration:
         configuration["backup_dir"] = os.getcwd()
     if not isinstance(configuration["backup_dir"], str):
@@ -85,11 +90,11 @@ def main(argv):
     ## Actual backups ##
 
     # Our actual backup will take place in a timestampped subdir
-    configuration["backup_dir"] = os.path.join(configuration["backup_dir"], "backup_{}".format(backup_datetime))
+    actual_backup_dir = os.path.join(configuration["backup_dir"], "backup_{}".format(backup_datetime))
 
     # We create our backup dir
     try:
-        os.makedirs(configuration["backup_dir"])
+        os.makedirs(actual_backup_dir)
     except OSError as e:
         sys.stderr.write("Error: backup dir creation: {}\n".format(e))
         sys.exit(4)
@@ -98,6 +103,7 @@ def main(argv):
     common_artifact_path = os.path.commonpath(configuration["artifacts"])
 
     # Backup each artifact
+    print("Backupping artifacts.")
     for artifact in configuration["artifacts"]:
         if not os.path.exists(artifact):
             sys.stderr.write("Warning: backup: {} doesn't exist (skipping).\n".format(artifact))
@@ -111,7 +117,7 @@ def main(argv):
                 artifact = artifact[:-1]
 
         # Build the output tar path
-        output_tar = "{}.{}.tar.gz".format(os.path.join(configuration["backup_dir"], os.path.relpath(artifact, common_artifact_path)), backup_datetime)
+        output_tar = "{}.{}.tar.gz".format(os.path.join(actual_backup_dir, os.path.relpath(artifact, common_artifact_path)), backup_datetime)
 
         # Create subdirectories
         try:
@@ -127,12 +133,16 @@ def main(argv):
 
         sys.stdout.write("{} done.\n".format(output_tar))
 
-    #TODO delete old backups
+    ## Old backups cleaning ##
 
     if configuration["delete_old_backups"]:
-        pass
-    else:
-        print("no")
+        print("Cleaning old backups. Strategy: all.")
+        backups_list = [os.path.join(configuration["backup_dir"], f) for f in os.listdir(configuration["backup_dir"]) if os.path.isdir(os.path.join(configuration["backup_dir"], f))]
+
+        for backup in backups_list:
+            if not os.path.samefile(backup, actual_backup_dir):
+                shutil.rmtree(backup)
+                sys.stdout.write("{} deleted.\n".format(backup))
 
 
 if __name__ == "__main__":
