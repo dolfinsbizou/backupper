@@ -14,7 +14,7 @@ backup_datetime = datetime.utcnow().strftime('%Y%m%d%H%M%S')
 def getHelp(command_name):
     help_string = """Usage: {} [OPTIONS...]
 
-  -h\t\t\tDisplays the current help and exits.
+  -h, --help\t\tDisplays the current help and exits.
   -f, --config-file\tSpecifies an alternative YAML config file (default: {}).
 """.format(command_name, configuration_file)
 
@@ -54,14 +54,14 @@ def main(argv):
 
     # Fetch command line arguments
     try:
-        opts, args = getopt.getopt(argv[1:], "hf:", ["config-file="])
+        opts, args = getopt.getopt(argv[1:], "hf:", ["config-file=", "help"])
     except getopt.GetoptError as e:
         sys.stderr.write("Error: command line arguments: {}\n".format(e))
         sys.stderr.write("Try {} -h for help.\n".format(command_name))
         sys.exit(1)
 
     for opt, arg in opts:
-        if opt == "-h":
+        if opt in ("-h", "--help"):
             sys.stdout.write(getHelp(command_name))
             sys.exit(0)
         if opt in ("-f", "--config-file"):
@@ -140,6 +140,7 @@ def main(argv):
         backups_list = [os.path.join(configuration["backup_dir"], f) for f in os.listdir(configuration["backup_dir"]) if os.path.isdir(os.path.join(configuration["backup_dir"], f))]
 
         for backup in backups_list:
+            # We always keep the last backup
             if not os.path.samefile(backup, actual_backup_dir):
                 shutil.rmtree(backup)
                 sys.stdout.write("{} deleted.\n".format(backup))

@@ -31,6 +31,44 @@ artifacts:
 * **Obligatoire :** non.
 * **Valeur par défaut :** `false`.
 
+## `cleaning_policy`
+
+* **Définition :** Permet de définir une politique fine de gestion des sauvegardes. Sans effet si `delete_old_backups` n'est pas défini ou vaut `false`. 
+* **Type :** au moins un des paramètres ci-dessous.
+* **Obligatoire :** non (en son absence, tous les anciens backups sont supprimés).
+
+Chaque paramètre ci-dessous peut-être présent (au moins un). Le schéma ci-dessous explicite leur principe.
+
+![Schéma explicatif de la gestion des backups](cleaning_policy.png)
+
+### `most_recents`
+
+* **Définition :** Nombre de backups récents à garder (en plus du backup en cours).
+* **Type :** entier positif ou nul.
+* **Obligatoire :** non.
+* **Valeur par défaut :** `0`.
+
+### `first_daily`
+
+* **Définition :** Nombre de backups du jour en cours à garder (garde les n premiers backups du jour).
+* **Type :** entier positif ou nul.
+* **Obligatoire :** non.
+* **Valeur par défaut :** `0`.
+
+### `first_weekly`
+
+* **Définition :** Nombre de backups de la semaine en cours à garder (garde les n premiers backups de la semaine).
+* **Type :** entier positif ou nul.
+* **Obligatoire :** non.
+* **Valeur par défaut :** `0`.
+
+### `first_monthly`
+
+* **Définition :** Nombre de backups du mois en cours à garder (garde les n premiers backups du mois).
+* **Type :** entier positif ou nul.
+* **Obligatoire :** non.
+* **Valeur par défaut :** `0`.
+
 ## `artifacts`
 
 * **Définition :** Spécifie la liste des fichiers et dossiers à sauvegarder.
