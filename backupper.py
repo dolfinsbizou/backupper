@@ -22,20 +22,43 @@ def getHelp(command_name):
 
 def validateConfiguration(configuration):
     # No empty configuration file
-    if configuration is None:
-        raise Exception("Empty configuration.")
+    if not isinstance(configuration, dict):
+        raise Exception("Empty or malformed configuration.")
 
     # artifacts
     if not "artifacts" in configuration:
-        raise Exception("Missing \"artifact\" node.")
-    if not isinstance(configuration["artifacts"], list):
-        raise Exception("Please provide a list of paths in the \"artifact\" node.")
+        raise Exception("Missing \"artifacts\" node.")
+    elif not isinstance(configuration["artifacts"], list):
+        raise Exception("Please provide a list of paths in the \"artifacts\" node.")
+    else:
+        for element in configuration["artifacts"]:
+            if not isinstance(element, str):
+                raise Exception("In \"artifacts\": {} isn't a string.".format(element))
 
     # delete_old_backups
     if not "delete_old_backups" in configuration:
         configuration["delete_old_backups"] = False
     elif configuration["delete_old_backups"] and not "backup_dir" in configuration:
         raise Exception("\"delete_old_backups\" is set to true, but there is no \"backup_dir\".")
+    elif not isinstance(configuration["delete_old_backups"], bool):
+        raise Exception("\"delete_old_backups\" should be a boolean.")
+
+    # cleaning_policy
+    if not "cleaning_policy" in configuration or configuration["cleaning_policy"] is None:
+        configuration["cleaning_policy"] = {
+            "most_recents": 0,
+            "first_daily": 0,
+            "first_weekly": 0,
+            "first_monthly": 0
+        }
+    elif not isinstance(configuration["cleaning_policy"], dict):
+        raise Exception("\"cleaning_policy\" should be a list of nodes.")
+    else:
+        for key in configuration["cleaning_policy"]:
+            if not key in ["most_recents", "first_daily", "first_weekly", "first_monthly"]:
+                raise Exception("\"{}\" is an incorrect \"cleaning_policy\" option.".format(key))
+            elif not (isinstance(configuration["cleaning_policy"][key], int) and configuration["cleaning_policy"][key] >= 0) :
+                raise Exception("\"{}\" should be a positive integer.".format(key))
 
     # backup_dir
     if not "backup_dir" in configuration:
