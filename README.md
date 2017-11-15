@@ -37,7 +37,15 @@ artifacts:
 * **Type :** au moins un des paramètres ci-dessous.
 * **Obligatoire :** non (en son absence, tous les anciens backups sont supprimés).
 
-Chaque paramètre ci-dessous peut-être présent (au moins un). Le schéma ci-dessous explicite leur principe.
+Chaque paramètre ci-dessous peut-être présent (au moins un). Le schéma ci-dessous explicite leur principe pour la _cleaning policy_ suivante :
+
+```
+cleaning_policy:
+    most_recents: 2
+    first_daily: 1
+    first_weekly: 6
+    first_monthly: 4
+```
 
 ![Schéma explicatif de la gestion des backups](cleaning_policy.png "Infographie/20")
 
