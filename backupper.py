@@ -8,6 +8,7 @@ import tarfile
 from datetime import datetime
 
 configuration_file = "backupfile.yml"
+backup_datetime = datetime.utcnow().strftime('%Y%m%d%H%M%S')
 
 def getHelp(command_name):
     help_string = """Usage: {} [OPTIONS...]
@@ -28,7 +29,6 @@ def validateConfiguration(configuration):
         raise Exception("Please provide a list of paths in the \"artifact\" node.")
 
     if not "backup_dir" in configuration:
-        # TODO use instead a new folder in the current working directory with a unique name (timestamp) to avoid collisions
         configuration["backup_dir"] = os.getcwd()
     if not isinstance(configuration["backup_dir"], str):
         raise Exception("\"backup_dir\" should be a string.")
@@ -79,14 +79,15 @@ def main(argv):
 
     ## Actual backups ##
 
+    # Our actual backup will take place in a timestampped subdir
+    configuration["backup_dir"] = os.path.join(configuration["backup_dir"], "backup_{}".format(backup_datetime))
+
+    # We create our backup dir
     try:
         os.makedirs(configuration["backup_dir"])
     except OSError as e:
-        if e.errno != os.errno.EEXIST:
-            sys.stderr.write("Error: {}\n".format(e))
-            sys.exit(4)
-        else:
-            sys.stderr.write("Info: {} already exists.\n".format(configuration["backup_dir"]))
+        sys.stderr.write("Error: {}\n".format(e))
+        sys.exit(4)
 
     # We need to know the common path for artifacts to remove it from the backup output structure
     common_artifact_path = os.path.commonpath(configuration["artifacts"])
@@ -97,7 +98,7 @@ def main(argv):
             sys.stderr.write("Warning: {} doesn't exist (skipping).\n".format(artifact))
             continue
 
-        #TODO skip files outside of working directory (as a Dockerfile can't copy file outside of its build context (ie directory of the Dockerfile))
+        # Not sure if we should allow to backup files from outside the backup context or not.
 
         # If our artifact is a directory we must remove the trailing slash so that os.path.basename can properly work
         elif os.path.isdir(artifact):
@@ -105,7 +106,7 @@ def main(argv):
                 artifact = artifact[:-1]
 
         # Build the output tar path
-        output_tar = "{}.{}.tar.gz".format(os.path.join(configuration["backup_dir"], os.path.relpath(artifact, common_artifact_path)), datetime.utcnow().strftime('%Y%m%d%H%M%S'))
+        output_tar = "{}.{}.tar.gz".format(os.path.join(configuration["backup_dir"], os.path.relpath(artifact, common_artifact_path)), backup_datetime)
 
         # Create subdirectories
         try:
