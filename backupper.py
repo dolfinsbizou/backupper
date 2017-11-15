@@ -28,6 +28,11 @@ def validateConfiguration(configuration):
     if not isinstance(configuration["artifacts"], list):
         raise Exception("Please provide a list of paths in the \"artifact\" node.")
 
+    if not "delete_old_backups" in configuration:
+        configuration["delete_old_backups"] = False
+    elif configuration["delete_old_backups"] and not "backup_dir" in configuration:
+        raise Exception("\"delete_old_backups\" is set to true, but there is no \"backup_dir\".")
+
     if not "backup_dir" in configuration:
         configuration["backup_dir"] = os.getcwd()
     if not isinstance(configuration["backup_dir"], str):
@@ -46,7 +51,7 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv[1:], "hf:", ["config-file="])
     except getopt.GetoptError as e:
-        sys.stderr.write("Error: {}\n".format(e))
+        sys.stderr.write("Error: command line arguments: {}\n".format(e))
         sys.stderr.write("Try {} -h for help.\n".format(command_name))
         sys.exit(1)
 
@@ -63,14 +68,14 @@ def main(argv):
         with open(configuration_file, "r") as f:
             configuration = yaml.load(f)
     except Exception as e:
-        sys.stderr.write("Error: {}\n".format(e))
+        sys.stderr.write("Error: yaml parsing: {}\n".format(e))
         sys.exit(2)
 
     # Validate the configuration file
     try:
         validateConfiguration(configuration)
     except Exception as e:
-        sys.stderr.write("Error: {}\n".format(e))
+        sys.stderr.write("Error: configuration validation: {}\n".format(e))
         sys.exit(3)
 
     # The configuration file directory sets the backup context, so if it's not in the current directory, let's change the working directory
@@ -86,7 +91,7 @@ def main(argv):
     try:
         os.makedirs(configuration["backup_dir"])
     except OSError as e:
-        sys.stderr.write("Error: {}\n".format(e))
+        sys.stderr.write("Error: backup dir creation: {}\n".format(e))
         sys.exit(4)
 
     # We need to know the common path for artifacts to remove it from the backup output structure
@@ -95,7 +100,7 @@ def main(argv):
     # Backup each artifact
     for artifact in configuration["artifacts"]:
         if not os.path.exists(artifact):
-            sys.stderr.write("Warning: {} doesn't exist (skipping).\n".format(artifact))
+            sys.stderr.write("Warning: backup: {} doesn't exist (skipping).\n".format(artifact))
             continue
 
         # Not sure if we should allow to backup files from outside the backup context or not.
@@ -113,7 +118,7 @@ def main(argv):
             os.makedirs(os.path.dirname(output_tar))
         except OSError as e:
             if e.errno != os.errno.EEXIST:
-                sys.stderr.write("Error: {}\n".format(e))
+                sys.stderr.write("Error: backup: {}\n".format(e))
                 sys.exit(4)
 
         # Write the actual tar file
@@ -123,6 +128,11 @@ def main(argv):
         sys.stdout.write("{} done.\n".format(output_tar))
 
     #TODO delete old backups
+
+    if configuration["delete_old_backups"]:
+        pass
+    else:
+        print("no")
 
 
 if __name__ == "__main__":
