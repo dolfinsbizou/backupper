@@ -39,7 +39,7 @@ artifacts:
 
 Chaque paramètre ci-dessous peut-être présent (au moins un). Le schéma ci-dessous explicite leur principe.
 
-![Schéma explicatif de la gestion des backups](cleaning_policy.png)
+![Schéma explicatif de la gestion des backups](cleaning_policy.png "Infographie/20")
 
 ### `most_recents`
 
