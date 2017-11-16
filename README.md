@@ -72,7 +72,7 @@ cleaning_policy:
 
 ### `first_monthly`
 
-* **Définition :** Nombre de backups du mois en cours à garder (garde les n premiers backups du mois).
+* **Définition :** Nombre de backups du mois en cours à garder (garde les n premiers backups datant du mois).
 * **Type :** entier positif ou nul.
 * **Obligatoire :** non.
 * **Valeur par défaut :** `0`.

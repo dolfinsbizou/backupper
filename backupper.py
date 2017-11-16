@@ -4,12 +4,13 @@ import sys
 import os
 import shutil
 import getopt
+import re
 import yaml
 import tarfile
-from datetime import datetime
+import datetime
 
 configuration_file = "backupfile.yml"
-backup_datetime = datetime.utcnow().strftime('%Y%m%d%H%M%S')
+backup_datetime = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
 
 def getHelp(command_name):
     help_string = """Usage: {} [OPTIONS...]
@@ -44,21 +45,20 @@ def validateConfiguration(configuration):
         raise Exception("\"delete_old_backups\" should be a boolean.")
 
     # cleaning_policy
+    valid_cleaning_policies = ["most_recents", "first_daily", "first_weekly", "first_monthly"]
     if not "cleaning_policy" in configuration or configuration["cleaning_policy"] is None:
-        configuration["cleaning_policy"] = {
-            "most_recents": 0,
-            "first_daily": 0,
-            "first_weekly": 0,
-            "first_monthly": 0
-        }
+        configuration["cleaning_policy"] = {}
     elif not isinstance(configuration["cleaning_policy"], dict):
         raise Exception("\"cleaning_policy\" should be a list of nodes.")
     else:
         for key in configuration["cleaning_policy"]:
-            if not key in ["most_recents", "first_daily", "first_weekly", "first_monthly"]:
+            if not key in valid_cleaning_policies:
                 raise Exception("\"{}\" is an incorrect \"cleaning_policy\" option.".format(key))
             elif not (isinstance(configuration["cleaning_policy"][key], int) and configuration["cleaning_policy"][key] >= 0) :
                 raise Exception("\"{}\" should be a positive integer.".format(key))
+    for policy in valid_cleaning_policies:
+        if not policy in configuration["cleaning_policy"]:
+            configuration["cleaning_policy"][policy] = 0
 
     # backup_dir
     if not "backup_dir" in configuration:
@@ -160,13 +160,48 @@ def main(argv):
 
     if configuration["delete_old_backups"]:
         print("Cleaning old backups. Strategy: all.")
-        backups_list = [os.path.join(configuration["backup_dir"], f) for f in os.listdir(configuration["backup_dir"]) if os.path.isdir(os.path.join(configuration["backup_dir"], f))]
+
+        # Backup pattern: a backup created by this script should look like this
+        backup_pattern = re.compile(r'backup_(?P<datetime_str>[0-9]{14})$')
+
+        # We discard regular files and directories that don't match the expected backup pattern
+        directories = [os.path.join(configuration["backup_dir"], f) for f in os.listdir(configuration["backup_dir"]) if os.path.isdir(os.path.join(configuration["backup_dir"], f))]
+        backups_list = list(filter(backup_pattern.search, directories))
+
+        # We always keep the current backup so we remove it from this list
+        backups_list.remove(actual_backup_dir)
+
+        # We can terminate the program if we have no old backup
+        if len(backups_list) == 0:
+            sys.exit(0)
+
+        backups_to_keep = []
+
+        # Skip some calculation if all cleaning policies are equal to 0
+        if not (all(configuration["cleaning_policy"][key] == 0 for key in configuration["cleaning_policy"])):
+            # We associate to each backup its corresponding datetime
+            backups_datetime = [datetime.datetime.strptime(backup_pattern.search(elem).group("datetime_str"), '%Y%m%d%H%M%S') for elem in backups_list]
+
+            # We sort files_datetime and selected_files accordingly
+            backups_datetime, backups_list = (list(t) for t in zip(*sorted(zip(backups_datetime, backups_list))))
+
+            # We also need the date of our current backup
+            curr_backup_date = datetime.datetime.strptime(backup_pattern.search(actual_backup_dir).group("datetime_str"), '%Y%m%d%H%M%S').date()
+
+            # Most recent backups
+            most_recent_backups = backups_list[-configuration["cleaning_policy"]["most_recents"]:]
+            backups_to_keep.extend(most_recent_backups)
+
+            # First daily files
+            backups_of_the_day = [backups_list[i] for i in range(0, len(backups_list)) if backups_datetime[i].date() == curr_backup_date][0:configuration["cleaning_policy"]["first_daily"]]
+            backups_to_keep.extend(backups_of_the_day)
 
         for backup in backups_list:
-            # We always keep the last backup
-            if not os.path.samefile(backup, actual_backup_dir):
+            if backup not in backups_to_keep:
                 shutil.rmtree(backup)
                 sys.stdout.write("{} deleted.\n".format(backup))
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
