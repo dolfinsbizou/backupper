@@ -49,6 +49,8 @@ cleaning_policy:
 
 ![Schéma explicatif de la gestion des backups](cleaning_policy.png "Infographie/20")
 
+N.B. : Gardez bien à l'esprit que si vous augmentez l'un de ses paramètres d'un backup sur l'autre, vous ne retrouverez pas magiquement vos backups déjà supprimés. Nous vous conseillons donc de bien choisir ces valeurs.
+
 ### `most_recents`
 
 * **Définition :** Nombre de backups récents à garder (en plus du backup en cours).
