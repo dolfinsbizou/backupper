@@ -159,7 +159,15 @@ def main(argv):
     ## Old backups cleaning ##
 
     if configuration["delete_old_backups"]:
-        print("Cleaning old backups. Strategy: all.")
+        has_cleaning_policy = not (all(configuration["cleaning_policy"][key] == 0 for key in configuration["cleaning_policy"]))
+        sys.stdout.write("Cleaning old backups. Strategy:")
+
+        if has_cleaning_policy:
+            sys.stdout.write("\n")
+            for policy in sorted(configuration["cleaning_policy"]):
+                sys.stdout.write("    {}: {}\n".format(policy, configuration["cleaning_policy"][policy]))
+        else:
+            sys.stdout.write("all.\n")
 
         # Backup pattern: a backup created by this script should look like this
         backup_pattern = re.compile(r'backup_(?P<datetime_str>[0-9]{14})$')
@@ -178,7 +186,7 @@ def main(argv):
         backups_to_keep = []
 
         # Skip some calculation if all cleaning policies are equal to 0
-        if not (all(configuration["cleaning_policy"][key] == 0 for key in configuration["cleaning_policy"])):
+        if has_cleaning_policy:
             # We associate to each backup its corresponding datetime
             backups_datetime = [datetime.datetime.strptime(backup_pattern.search(elem).group("datetime_str"), '%Y%m%d%H%M%S') for elem in backups_list]
 
