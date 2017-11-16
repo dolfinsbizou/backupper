@@ -196,6 +196,10 @@ def main(argv):
             backups_of_the_day = [backups_list[i] for i in range(0, len(backups_list)) if backups_datetime[i].date() == curr_backup_date][0:configuration["cleaning_policy"]["first_daily"]]
             backups_to_keep.extend(backups_of_the_day)
 
+            # First weekly files
+            backups_of_the_week = [backups_list[i] for i in range(0, len(backups_list)) if (abs(backups_datetime[i].date() - curr_backup_date) < datetime.timedelta(days=7) and backups_datetime[i].weekday() <= curr_backup_date.weekday())][0:configuration["cleaning_policy"]["first_weekly"]]
+            backups_to_keep.extend(backups_of_the_week)
+
             # First monthly files
             backups_of_the_month = [backups_list[i] for i in range(0, len(backups_list)) if backups_datetime[i].date().replace(day=1) == curr_backup_date.replace(day=1)][0:configuration["cleaning_policy"]["first_monthly"]]
             backups_to_keep.extend(backups_of_the_month)
