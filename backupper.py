@@ -196,6 +196,10 @@ def main(argv):
             backups_of_the_day = [backups_list[i] for i in range(0, len(backups_list)) if backups_datetime[i].date() == curr_backup_date][0:configuration["cleaning_policy"]["first_daily"]]
             backups_to_keep.extend(backups_of_the_day)
 
+            # First monthly files
+            backups_of_the_month = [backups_list[i] for i in range(0, len(backups_list)) if backups_datetime[i].date().replace(day=1) == curr_backup_date.replace(day=1)][0:configuration["cleaning_policy"]["first_monthly"]]
+            backups_to_keep.extend(backups_of_the_month)
+
         for backup in backups_list:
             if backup not in backups_to_keep:
                 shutil.rmtree(backup)
