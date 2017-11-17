@@ -1,3 +1,7 @@
+"""
+    backupper entrypoint.
+"""
+
 import sys
 import os
 import shutil
@@ -10,6 +14,11 @@ import datetime
 from . import utils
 
 def main():
+    """
+        Main entrypoint.
+
+        .. todo:: Move configuration variables somewhere else, cut this big function into smaller chunks.
+    """
 
     # Configuration variables
     configuration_file = "backupfile.yml"
