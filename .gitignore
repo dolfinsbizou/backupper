@@ -3,3 +3,4 @@ backupfile.yml
 __pycache__
 dist
 *.egg-info
+build
