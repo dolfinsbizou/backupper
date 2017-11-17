@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import sys
 import os
 import shutil
@@ -66,18 +64,18 @@ def validateConfiguration(configuration):
     if not isinstance(configuration["backup_dir"], str):
         raise Exception("\"backup_dir\" should be a string.")
 
-def main(argv):
+def main():
 
     # Configuration variables
     global configuration_file
     configuration = None
-    command_name = os.path.basename(argv[0])
+    command_name = os.path.basename(sys.argv[0])
 
     ## Initialisation ##
 
     # Fetch command line arguments
     try:
-        opts, args = getopt.getopt(argv[1:], "hf:", ["config-file=", "help"])
+        opts, args = getopt.getopt(sys.argv[1:], "hf:", ["config-file=", "help"])
     except getopt.GetoptError as e:
         sys.stderr.write("Error: command line arguments: {}\n".format(e))
         sys.stderr.write("Try {} -h for help.\n".format(command_name))
@@ -218,7 +216,3 @@ def main(argv):
                 sys.stdout.write("{} deleted.\n".format(backup))
 
     sys.exit(0)
-
-
-if __name__ == "__main__":
-    main(sys.argv)

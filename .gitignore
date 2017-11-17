@@ -1,2 +1,5 @@
-tests/
+ignore_demo/
 backupfile.yml
+__pycache__
+dist
+*.egg-info
