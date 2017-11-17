@@ -38,7 +38,7 @@ def main():
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            sys.stdout.write(utils.getHelp(command_name, configuration_file))
+            sys.stdout.write(utils.get_help(command_name, configuration_file))
             sys.exit(0)
         if opt in ("-f", "--config-file"):
             configuration_file = str(arg)
@@ -54,7 +54,7 @@ def main():
 
     # Validate the configuration file
     try:
-        utils.validateConfiguration(configuration)
+        utils.validate_configuration(configuration)
     except Exception as e:
         sys.stderr.write("Error: configuration validation: {}\n".format(e))
         sys.exit(3)

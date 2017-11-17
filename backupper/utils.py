@@ -2,9 +2,11 @@
     Some functions used by backupper.cli.main during the initialisation process.
 """
 
+import backupper
+
 import os
 
-def getHelp(command_name, configuration_file):
+def get_help(command_name, configuration_file):
     """
         Returns the cli help string.
 
@@ -26,7 +28,7 @@ def getHelp(command_name, configuration_file):
 
     return help_string
 
-def validateConfiguration(configuration):
+def validate_configuration(configuration):
     """
         Validates a configuration (usually loaded from a yml file).
 
