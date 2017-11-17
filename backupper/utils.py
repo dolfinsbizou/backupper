@@ -82,3 +82,6 @@ def validate_configuration(configuration):
         configuration["backup_dir"] = os.getcwd()
     if not isinstance(configuration["backup_dir"], str):
         raise Exception("\"backup_dir\" should be a string.")
+
+def get_version():
+    return "backupper version {}".format(backupper.__version__)

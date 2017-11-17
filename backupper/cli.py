@@ -11,6 +11,7 @@ import yaml
 import tarfile
 import datetime
 
+import backupper
 from . import utils
 
 def main():
@@ -30,7 +31,7 @@ def main():
 
     # Fetch command line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hf:", ["config-file=", "help"])
+        opts, args = getopt.getopt(sys.argv[1:], "f:hV", ["config-file=", "help", "version"])
     except getopt.GetoptError as e:
         sys.stderr.write("Error: command line arguments: {}\n".format(e))
         sys.stderr.write("Try {} -h for help.\n".format(command_name))
@@ -39,6 +40,9 @@ def main():
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             sys.stdout.write(utils.get_help(command_name, configuration_file))
+            sys.exit(0)
+        if opt in ("-V", "--version"):
+            sys.stdout.write("{}\n".format(utils.get_version()))
             sys.exit(0)
         if opt in ("-f", "--config-file"):
             configuration_file = str(arg)
