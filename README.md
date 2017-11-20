@@ -7,21 +7,23 @@ See `./backupper.py -h` for command usage.
 ## Setup
 
 ```
-    sudo ./setup.py install
-    # ou, pour l'installer pour l'utilisateur courant
-    ./setup.py install --user
+    sudo python3.6 setup.py install
+    # or, to install it for the user
+    python3.6 setup.py install --user
 ```
+
+Recommended python version is 3.6. It won't work with version 3.4 and older.
 
 ## Configuration reference
 
 ### Minimal backupfile.yml
 
 ```
-backup_dir: /racine/du/dossier/de/sauvegarde
+backup_dir: /backup/root
 artifacts:
-    - un/fichier
-    - un/dossier
-    - un/autre/dossier/
+    - a/file
+    - a/directory
+    - /another/directory/
     - et/caetera
 ```
 

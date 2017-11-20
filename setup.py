@@ -29,7 +29,7 @@ def long_description(*tree):
         rst_readme = convert(tree_join, 'rst')
         with open("{}.rst".format(os.path.splitext(tree_join)[0]), "w") as f:
             f.write(rst_readme)
-        return rst_readme
+        return re.sub("cleaning_policy.png", "https://github.com/dolfinsbizou/backupper/raw/master/cleaning_policy.png", rst_readme)
     except ImportError:
         sys.stderr.write("warning: pypandoc module not found, README.md couldn't be converted.\n")
         return read(*tree)
@@ -53,8 +53,8 @@ setup(
         'Environment :: Console',
         'Intended Audience :: System Administrators',
         'Natural Language :: English',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3 :: Only',
         'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
         'Topic :: System :: Archiving :: Backup'
