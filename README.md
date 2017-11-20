@@ -1,10 +1,20 @@
 # Backupper
 
-Un simple utilitaire de backup de fichiers configurable en YAML.
+A simple backup utility. Configurable with a YAML file.
 
-Voir `./backupper.py -h` pour l'utilisation de la commande.
+See `./backupper.py -h` for command usage.
 
-backupfile.yml minimal :
+## Setup
+
+```
+    sudo ./setup.py install
+    # ou, pour l'installer pour l'utilisateur courant
+    ./setup.py install --user
+```
+
+## Configuration reference
+
+### Minimal backupfile.yml
 
 ```
 backup_dir: /racine/du/dossier/de/sauvegarde
@@ -15,37 +25,27 @@ artifacts:
     - et/caetera
 ```
 
-## Installation
-
-```
-    sudo ./setup.py install
-    # ou, pour l'installer pour l'utilisateur courant
-    ./setup.py install --user
-```
-
-## Référence du backupfile.yml
-
 ### `backup_dir`
 
-* **Définition :** Spécifie le dossier dans lequel le répertoire du backup sera créé. Si le dossier n'existe pas, il sera créé.
-* **Type :** chemin d'accès relatif ou absolu.
-* **Obligatoire :** non, sauf si `delete_old_backups` vaut `true`.
-* **Valeur par défaut :** le dossier courant.
+* **Definition :** specifies the folder in which the backup directory will be created. If the folder doesn't exist, it will be created.
+* **Type :** relative or absolute path.
+* **Mandatory :** no, unless `delete_old_backups` is set to `true`.
+* **Default value :** current working directory.
 
 ### `delete_old_backups`
 
-* **Définition :** Permet de supprimer les précédents backups du dossier de sauvegarde spécifié dans `backup_dir`. Si `cleaning_policy` n'est pas défini, par défaut tous les précédents backups sont supprimés.
-* **Type :** booléen.
-* **Obligatoire :** non.
-* **Valeur par défaut :** `false`.
+* **Definition :** allows you to delete old backups from the backup directory specified in `backup_dir`. If `cleaning_policy` isn't set, all previous backups will be deleted.
+* **Type :** boolean.
+* **Mandatory :** no.
+* **Default value :** `false`.
 
 ### `cleaning_policy`
 
-* **Définition :** Permet de définir une politique fine de gestion des sauvegardes. Sans effet si `delete_old_backups` n'est pas défini ou vaut `false`. 
-* **Type :** au moins un des paramètres ci-dessous.
-* **Obligatoire :** non (en son absence, tous les anciens backups sont supprimés).
+* **Definition :** allows you to define a fine-tuned deletion policy. Will do nothing if `delete_old_backups` is set to `false`.
+* **Type :** at least one of the following parameters.
+* **Mandatory :** no (if not set, all older backups will be deleted).
 
-Chaque paramètre ci-dessous peut-être présent (au moins un). Le schéma ci-dessous explicite leur principe pour la _cleaning policy_ suivante :
+Each parameter below can be set (at least one). The following schema visually presents how they work, assuming this _cleaning policy_:
 
 ```
 cleaning_policy:
@@ -55,40 +55,40 @@ cleaning_policy:
     first_monthly: 4
 ```
 
-![Schéma explicatif de la gestion des backups](cleaning_policy.png "Infographie/20")
+![Backup management schema](cleaning_policy.png "such design wow")
 
-N.B. : Gardez bien à l'esprit que si vous augmentez l'un de ses paramètres d'un backup sur l'autre, vous ne retrouverez pas magiquement vos backups déjà supprimés. Nous vous conseillons donc de bien choisir ces valeurs.
+N.B.: please keep in mind that if you increase one of the parameters between two backups, deleted backups won't magically pop back from nowhere. We strongly advise you to be careful with these values.
 
 #### `most_recents`
 
-* **Définition :** Nombre de backups récents à garder (en plus du backup en cours).
-* **Type :** entier positif ou nul.
-* **Obligatoire :** non.
-* **Valeur par défaut :** `0`.
+* **Definition :** number of recent backups to keep (in addition to the current one).
+* **Type :** natural integer.
+* **Mandatory :** no.
+* **Default value :** `0`.
 
 #### `first_daily`
 
-* **Définition :** Nombre de backups du jour en cours à garder (garde les n premiers backups du jour).
-* **Type :** entier positif ou nul.
-* **Obligatoire :** non.
-* **Valeur par défaut :** `0`.
+* **Definition :** number of daily backups to keep (keeps the n first backups of the current day).
+* **Type :** natural integer.
+* **Mandatory :** no.
+* **Default value :** `0`.
 
 #### `first_weekly`
 
-* **Définition :** Nombre de backups de la semaine en cours à garder (garde les n premiers backups de la semaine).
-* **Type :** entier positif ou nul.
-* **Obligatoire :** non.
-* **Valeur par défaut :** `0`.
+* **Definition :** number of weekly backups to keep (keeps the n first backups of the current week).
+* **Type :** natural integer.
+* **Mandatory :** no.
+* **Default value :** `0`.
 
 #### `first_monthly`
 
-* **Définition :** Nombre de backups du mois en cours à garder (garde les n premiers backups du mois).
-* **Type :** entier positif ou nul.
-* **Obligatoire :** non.
-* **Valeur par défaut :** `0`.
+* **Definition :** number of monthly backups to keep (keeps the n first backups of the current month).
+* **Type :** natural integer.
+* **Mandatory :** no.
+* **Default value :** `0`.
 
 ### `artifacts`
 
-* **Définition :** Spécifie la liste des fichiers et dossiers à sauvegarder.
-* **Type :** liste de chemins d'accès relatifs ou absolus.
-* **Obligatoire :** oui.
+* **Definition :** specifies a list of files and folders to backup.
+* **Type :** a list of absolute or relative paths.
+* **Mandatory :** yes.
