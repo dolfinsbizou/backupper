@@ -22,13 +22,25 @@ def requirements(*tree):
     requirements_file = read(*tree)
     return [r for r in requirements_file.split("\n") if r != ""]
 
+def long_description(*tree):
+    try:
+        from pypandoc import convert
+        tree_join = os.path.join(os.path.dirname(__file__), *tree)
+        rst_readme = convert(tree_join, 'rst')
+        with open("{}.rst".format(os.path.splitext(tree_join)[0]), "w") as f:
+            f.write(rst_readme)
+        return rst_readme
+    except ImportError:
+        sys.stderr.write("warning: pypandoc module not found, README.md couldn't be converted.\n")
+        return read(*tree)
+
 setup(
     name = "backupper",
     version = version("backupper", "__init__.py"),
     author = "Guillaume Jorandon",
     author_email = "jorandon@gmail.com",
     description = "Easy and configurable backup tool",
-    long_description = "TODO",
+    long_description = long_description("README.md"),
     license = "MIT",
     url = "https://github.com/dolfinsbizou/backupper",
     packages = find_packages(exclude=["tests"]), # Yeah I don't have a test package (yet) but I should totally have one
