@@ -6,7 +6,6 @@ import os
 import re
 import sys
 
-# Inspired by docker-compose setup.py
 def read(*tree):
     with open(os.path.join(os.path.dirname(__file__), *tree), encoding='utf-8') as f:
         return f.read()

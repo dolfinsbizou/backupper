@@ -14,6 +14,8 @@ import datetime
 import backupper
 from . import utils
 
+__all__ = []
+
 def main():
     """
         Main entrypoint.

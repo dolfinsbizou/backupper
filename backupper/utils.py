@@ -6,6 +6,8 @@ import backupper
 
 import os
 
+__all__ = ["get_help", "validate_configuration"]
+
 def get_help(command_name, configuration_file):
     """
         Returns the cli help string.
