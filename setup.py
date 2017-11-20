@@ -55,7 +55,7 @@ setup(
         'Natural Language :: English',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Operating System :: OS Independent'
+        'Operating System :: OS Independent',
         'License :: OSI Approved :: MIT License',
         'Topic :: System :: Archiving :: Backup'
     ]
