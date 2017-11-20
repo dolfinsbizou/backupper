@@ -20,21 +20,21 @@ class AbstractStorageContext(ABC):
         pass
 
     @abstractmethod
-    def connect():
+    def connect(self):
     """
         Opens a connection with the storage.
     """
         pass
 
     @abstractmethod
-    def disconnect():
+    def disconnect(self):
     """
         Closes the connection with the storage.
     """
         pass
 
     @abstractmethod
-    def upload(src, dest="."):
+    def upload(self, src, dest="."):
     """
         Uploads a file to the storage.
 
@@ -46,7 +46,7 @@ class AbstractStorageContext(ABC):
         pass
 
     @abstractmethod
-    def download(src, dest="."):
+    def download(self, src, dest="."):
     """
         Retrieves a file from the storage.
 
@@ -58,14 +58,14 @@ class AbstractStorageContext(ABC):
         pass
 
     @abstractmethod
-    def listdir():
+    def listdir(self):
     """
         Lists the contents of the storage.
     """
         pass
 
     @abstractmethod
-    def chdir(path="."):
+    def chdir(self, path="."):
     """
         Changes the storage working directory.
 
@@ -75,7 +75,7 @@ class AbstractStorageContext(ABC):
         pass
 
     @abstractmethod
-    def remove(path):
+    def remove(self, path):
     """
         Removes a file or directory from the storage.
 
@@ -85,7 +85,7 @@ class AbstractStorageContext(ABC):
         pass
 
     @abstractmethod
-    def getcwd():
+    def getcwd(self):
     """
         Returns the storage working directory.
 
