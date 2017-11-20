@@ -79,6 +79,10 @@ def main():
         sys.stderr.write("Error: backup dir creation: {}\n".format(e))
         sys.exit(4)
 
+
+    # As we allow absolute path, we must absolutize all of them so that os.path.commonpath can work (but also to have a coherent backup dir structure)
+    configuration["artifacts"] = [os.path.abspath(artifact) for artifact in configuration["artifacts"]]
+
     # We need to know the common path for artifacts to remove it from the backup output structure
     common_artifact_path = os.path.commonpath(configuration["artifacts"])
 
@@ -89,10 +93,8 @@ def main():
             sys.stderr.write("Warning: backup: {} doesn't exist (skipping).\n".format(artifact))
             continue
 
-        # Not sure if we should allow to backup files from outside the backup context or not.
-
         # If our artifact is a directory we must remove the trailing slash so that os.path.basename can properly work
-        elif os.path.isdir(artifact):
+        if os.path.isdir(artifact):
             if artifact.endswith('/'):
                 artifact = artifact[:-1]
 
