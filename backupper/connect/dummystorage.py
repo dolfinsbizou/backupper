@@ -54,22 +54,26 @@ class DummyStorage(AbstractStorageContext):
             raise NotConnectedError("disconnect: Not connected.")
 
     def upload(self, src, dest="."):
-        pass
+        if self._connected:
+            # Try to retrieve the source
+            if not os.path.exists(src):
+                raise NotFoundError("upload: {} doesn't exist.".format(src))
+
+            #TODO
+
+        else:
+            raise NotConnectedError("download: Not connected.")
 
     def download(self, src, dest="."):
         if self._connected:
-            file_to_download = {}
-
             # Try to retrieve the source
             try:
                 file_to_download = self._walk(src)
                 canonical_dest = os.path.abspath(dest)
-                canonical_src = os.path.normpath(os.path.join(self._cwd, src))
 
                 # If the destination is an existing directory, and if we're going to download a directory, we append the destination filename to the canonical destination
-                #FIXME root
                 if os.path.isdir(canonical_dest) and isinstance(file_to_download, dict):
-                    canonical_dest = os.path.join(canonical_dest, os.path.basename(canonical_src))
+                    canonical_dest = os.path.join(canonical_dest, os.path.basename(src))
                     dest = os.path.join(dest, os.path.basename(src))
 
                 # If the destination is an existing file, we raise an exception (otherwise we would override it)
@@ -78,7 +82,7 @@ class DummyStorage(AbstractStorageContext):
 
                 # We package the file to download in a super dict, otherwise we create the base file
                 if not isinstance(file_to_download, dict):
-                    file_to_download = {os.path.basename(canonical_src): file_to_download}
+                    file_to_download = {os.path.basename(src): file_to_download}
                 else:
                     try:
                         os.mkdir(canonical_dest)
@@ -87,7 +91,7 @@ class DummyStorage(AbstractStorageContext):
 
                 self._recursive_download(file_to_download, canonical_dest)
             except NotFoundError:
-                raise NotFoundError("download: {} doesn't exist".format(src))
+                raise NotFoundError("download: {} doesn't exist.".format(src))
 
         else:
             raise NotConnectedError("download: Not connected.")
