@@ -15,7 +15,7 @@ class DummyStorage(AbstractStorageContext):
 
     def __init__(self):
         self._tree = {
-            "file": "prout prout prout (je suis un enfant)",
+            "file": "prout proéééut prout (je suis un enfant)",
             "dir": {
                 "a": "",
                 "b": "foo",
@@ -39,17 +39,16 @@ class DummyStorage(AbstractStorageContext):
         """True if connected"""
 
     def connect(self):
-        # Does nothing else but toggleing a boolean
+        # Does nothing else but toggling a boolean
         if not self._connected:
             self._connected = True
         else:
             raise AlreadyConnectedError("connect: Already connected.")
 
     def disconnect(self):
-        # Does nothing else but toggleing a boolean and deleting the tree
+        # Does nothing else but toggling a boolean
         if self._connected:
             self._connected = False
-            self._tree = {}
             self._cwd = "/"
         else:
             raise NotConnectedError("disconnect: Not connected.")
@@ -58,7 +57,66 @@ class DummyStorage(AbstractStorageContext):
         pass
 
     def download(self, src, dest="."):
-        pass
+        if self._connected:
+            file_to_download = {}
+
+            # Try to retrieve the source
+            try:
+                file_to_download = self._walk(src)
+                canonical_dest = os.path.abspath(dest)
+                canonical_src = os.path.normpath(os.path.join(self._cwd, src))
+
+                # If the destination is an existing directory, and if we're going to download a directory, we append the destination filename to the canonical destination
+                #FIXME root
+                if os.path.isdir(canonical_dest) and isinstance(file_to_download, dict):
+                    canonical_dest = os.path.join(canonical_dest, os.path.basename(canonical_src))
+                    dest = os.path.join(dest, os.path.basename(src))
+
+                # If the destination is an existing file, we raise an exception (otherwise we would override it)
+                if os.path.isfile(canonical_dest):
+                    raise UnpermittedOperationError("download: {} already exists.".format(dest))
+
+                # We package the file to download in a super dict, otherwise we create the base file
+                if not isinstance(file_to_download, dict):
+                    file_to_download = {os.path.basename(canonical_src): file_to_download}
+                else:
+                    try:
+                        os.mkdir(canonical_dest)
+                    except FileExistsError:
+                        pass
+
+                self._recursive_download(file_to_download, canonical_dest)
+            except NotFoundError:
+                raise NotFoundError("download: {} doesn't exist".format(src))
+
+        else:
+            raise NotConnectedError("download: Not connected.")
+
+    def _recursive_download(self, source_tree, canonical_dest):
+        """
+            Internal recursive download subroutine.
+
+            When downloading a directory, recursively creates its structure.
+
+            :param source_tree: The tree to download.
+            :type source_tree: dict
+            :param canonical_dest: Absolute path for the destination.
+            :type canonical_dest: str
+
+            :raises:
+        """
+
+        for item in source_tree:
+            if isinstance(source_tree[item], dict):
+                next_canonical_dest = os.path.join(canonical_dest, item)
+                os.mkdir(next_canonical_dest)
+                self._recursive_download(source_tree[item], next_canonical_dest)
+            else:
+                opening_mode = "x"
+                if not isinstance(source_tree[item], str):
+                    opening_mode+= "b"
+                with open(os.path.join(canonical_dest, item), opening_mode) as f:
+                    f.write(source_tree[item])
 
     def listdir(self, path="."):
         if self._connected:
