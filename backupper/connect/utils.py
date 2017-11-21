@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 
-__all__ = ["AlreadyConnectedError", "NotConnectedError", "AbstractStorageContext"]
+__all__ = ["AlreadyConnectedError", "NotConnectedError", "NotFoundError", "UnpermittedOperationError", "AbstractStorageContext"]
 
 class AlreadyConnectedError(Exception):
     """
@@ -14,6 +14,16 @@ class AlreadyConnectedError(Exception):
 class NotConnectedError(Exception):
     """
         Raised if you try to perform an operation while the connection hasn't been established.
+    """
+
+class NotFoundError(Exception):
+    """
+        Raised if a file or directory doesn't exist in the storage.
+    """
+
+class UnpermittedOperationError(Exception):
+    """
+        Raised if trying to perform an unpermitted operation (chdir to a file for instance).
     """
 
 class AbstractStorageContext(ABC):
@@ -104,7 +114,7 @@ class AbstractStorageContext(ABC):
         """
 
     @abstractmethod
-    def chdir(self, path="."):
+    def chdir(self, path="/"):
         """
             Changes the storage working directory.
 
