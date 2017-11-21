@@ -119,7 +119,45 @@ class DummyStorage(AbstractStorageContext):
             raise NotConnectedError("mkdir: Not connected.")
 
     def rename(self, path, new_path):
-        pass
+        if self._connected:
+            canonical_path = os.path.normpath(os.path.join(self._cwd, path))
+            basefile, old_file = os.path.split(canonical_path)
+
+            # Try to walk to the old base directory
+            base = {}
+            try:
+                base = self._walk(basefile)
+            except NotFoundError:
+                raise NotFoundError("rename: {} doesn't exist.".format(basefile))
+
+            # If the old file doesn't exist, we raise an exception
+            if not old_file in base:
+                raise NotFoundError("rename: {} doesn't exist.".format(path))
+
+            # Try to walk to the new base directory
+            new_canonical_path = os.path.normpath(os.path.join(self._cwd, new_path))
+            new_basefile, new_name = os.path.split(new_canonical_path)
+            try:
+                new_base = self._walk(new_basefile)
+
+                # If the new basefile is a regular file we raise an exception
+                if not isinstance(new_base, dict):
+                    raise UnpermittedOperationError("rename: {} is a file.".format(new_basefile))
+
+                # If the destination is in the source, we raise an exception (you can't copy a directory in itself)
+                if os.path.basename(os.path.commonpath([canonical_path, new_canonical_path])) == os.path.basename(canonical_path):
+                    raise UnpermittedOperationError("rename: can't rename {} into itself.".format(path))
+
+                # If the new file name already exists, we raise an exception
+                if new_name in new_base:
+                    raise UnpermittedOperationError("rename: {} already exists.".format(new_path))
+
+
+                new_base[new_name] = base.pop(old_file)
+            except NotFoundError:
+                raise NotFoundError("rename:  {} doesn't exist.".format(new_basefile))
+        else:
+            raise NotConnectedError("rename: Not connected.")
 
     def chdir(self, path="/"):
         if self._connected:
