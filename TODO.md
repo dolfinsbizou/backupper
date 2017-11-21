@@ -1,1 +1,2 @@
-* Ajouter des paramètres de la ligne de commande pour override la configuration du .yml.
+* Add command line options to override YAML configuration.
+* Use ISO datetime in backup file names.
