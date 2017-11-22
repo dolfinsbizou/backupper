@@ -103,7 +103,7 @@ class FTPStorage(AbstractStorageContext):
             next_dest = os.path.join(dest, f)
             if os.path.isdir(subfile):
                 self._connection.mkd(next_dest)
-                _recursive_upload(subfile, next_dest)
+                self._recursive_upload(subfile, next_dest)
             else:
                 with open(subfile, 'rb') as fp:
                     self._connection.storbinary('STOR {}'.format(next_dest), fp)
@@ -176,11 +176,17 @@ class FTPStorage(AbstractStorageContext):
 
         try:
             if self.isdir(path):
+                # TODO We should recursively delete the contents of path before removing the directory, otherwise we get an error
                 self._connection.rmd(path)
             else:
                 self._connection.delete(path)
         except Exception as e:
             raise StorageError("remove: FTP module returned an error ({}).".format(e))
+
+    def _recursive_upload(self, current_file):
+        """
+            TODO IMPLEMENT ME
+        """
 
     def mkdir(self, path):
         if self._connection is None:

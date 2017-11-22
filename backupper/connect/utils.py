@@ -4,7 +4,7 @@
 
 from abc import ABC, abstractmethod
 
-__all__ = ["StorageError", "AlreadyConnectedError", "NotConnectedError", "NotFoundError", "UnpermittedOperationError", "AbstractStorageContext"]
+__all__ = ["StorageError", "AlreadyConnectedError", "NotConnectedError", "UnableToConnectError", "NotFoundError", "UnpermittedOperationError", "AbstractStorageContext"]
 
 class StorageError(Exception):
     """
