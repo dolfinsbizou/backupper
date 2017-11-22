@@ -4,29 +4,34 @@
 
 from abc import ABC, abstractmethod
 
-__all__ = ["AlreadyConnectedError", "NotConnectedError", "NotFoundError", "UnpermittedOperationError", "AbstractStorageContext"]
+__all__ = ["StorageError", "AlreadyConnectedError", "NotConnectedError", "NotFoundError", "UnpermittedOperationError", "AbstractStorageContext"]
 
-class AlreadyConnectedError(Exception):
+class StorageError(Exception):
+    """
+        Generic storage error (all errors defined below inherit from this exception).
+    """
+
+class AlreadyConnectedError(StorageError):
     """
         Raised if you try to open a connection while it's already established.
     """
 
-class NotConnectedError(Exception):
+class NotConnectedError(StorageError):
     """
         Raised if you try to perform an operation while the connection hasn't been established.
     """
 
-class UnableToConnectError(Exception):
+class UnableToConnectError(StorageError):
     """
         Raised if the connection wasn't successfully established.
     """
 
-class NotFoundError(Exception):
+class NotFoundError(StorageError):
     """
         Raised if a file or directory doesn't exist in the storage.
     """
 
-class UnpermittedOperationError(Exception):
+class UnpermittedOperationError(StorageError):
     """
         Raised if trying to perform an unpermitted operation (chdir to a file for instance).
     """
