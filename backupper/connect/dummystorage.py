@@ -1,5 +1,4 @@
 import os
-from binaryornot.check import is_binary
 
 from .utils import *
 
@@ -44,6 +43,7 @@ class DummyStorage(AbstractStorageContext):
             # Try to retrieve the source
             if not os.path.exists(src):
                 raise NotFoundError("upload: {} doesn't exist.".format(src))
+            src = os.path.abspath(src)
 
             # Try to access the destination
             dest_tree = {}
@@ -103,10 +103,7 @@ class DummyStorage(AbstractStorageContext):
                 dest_tree[dest_filename] = {}
                 self._recursive_upload(item, dest_tree[dest_filename])
             else:
-                opening_mode = "r"
-                if is_binary(item):
-                    opening_mode+= "b"
-                with open(item, opening_mode) as f:
+                with open(item, "rb") as f:
                     dest_tree[dest_filename] = f.read()
 
     def download(self, src, dest="."):
