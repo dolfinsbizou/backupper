@@ -49,10 +49,64 @@ class FTPStorage(AbstractStorageContext):
         if self._connection is None:
             raise NotConnectedError("upload: you're not connected to {}.".format(self.host))
 
+        dest_filename = ""
+
         try:
-            pass
+            dest_files = self.listdir(dest)
+
+            if not self.isdir(dest):
+                raise UnpermittedOperationError("upload: {} is a file.".format(dest))
+
+            if os.path.basename(src) in dest_files:
+                raise UnpermittedOperationError("upload: {} already exists.".format(src))
+
+            dest_filename = os.path.basename(src)
+        except NotFoundError as e:
+            try:
+                dest, dest_filename = os.path.split(dest)
+
+                self.listdir(dest)
+
+                if not self.isdir(dest):
+                    raise UnpermittedOperationError("upload: {} is a file.".format(os.path.normpath(dest)))
+            except NotFoundError:
+                raise NotFoundError("upload: {} doesn't exist.".format(os.path.normpath(os.path.dirname(dest))))
+
+        if not os.path.exists(src):
+            raise NotFoundError("upload: {} doesn't exist.".format(src))
+
+        try:
+            if os.path.isdir(src):
+                full_dest = os.path.join(dest, dest_filename)
+                self._connection.mkd(full_dest)
+                self._recursive_upload(src, full_dest)
+            else:
+                with open(src, "rb") as f:
+                    self._connection.storbinary('STOR {}'.format(os.path.join(dest, dest_filename)), f)
         except Exception as e:
             raise StorageError("upload: FTP module returned an error ({}).".format(e))
+
+    def _recursive_upload(self, current_file, dest):
+        """
+            Internal recursive upload subroutine.
+
+            When uploading a directory, recursively creates its structure.
+
+            :param current_file: The directory to upload.
+            :type current_file: str
+            :param dest: Destination.
+            :type dest: str
+        """
+        files = os.listdir(current_file)
+        for f in files:
+            subfile = os.path.join(current_file, f)
+            next_dest = os.path.join(dest, f)
+            if os.path.isdir(subfile):
+                self._connection.mkd(next_dest)
+                _recursive_upload(subfile, next_dest)
+            else:
+                with open(subfile, 'rb') as fp:
+                    self._connection.storbinary('STOR {}'.format(next_dest), fp)
 
     def download(self, src, dest="."):
         if self._connection is None:
@@ -71,34 +125,57 @@ class FTPStorage(AbstractStorageContext):
         abs_path = os.path.normpath(os.path.join(last_path, path))
 
         try:
+            if not self.isdir(path):
+                return [os.path.basename(path)]
             self.chdir(abs_path)
             result = [os.path.basename(f) for f in self._connection.nlst("-a") if not os.path.basename(f) in [".", "..", ""]]
             self.chdir(last_path)
             return result
+        except NotFoundError as e:
+            self.chdir(last_path)
+            raise NotFoundError("listdir: FTP module returned an error ({}).".format(e))
         except Exception as e:
             self.chdir(last_path)
             raise StorageError("listdir: FTP module returned an error ({}).".format(e))
 
+    def isdir(self, path):
+        """
+            Tests if the path is an existing directory.
 
-    def remove(self, path):
+            :param path: File to test.
+            :type path: str
+            :return: True if the path is a directory.
+            :rtype: bool
+        """
+
         if self._connection is None:
-            raise NotConnectedError("remove: you're not connected to {}.".format(self.host))
+            raise NotConnectedError("isdir: you're not connected to {}.".format(self.host))
 
         basename, filename = os.path.split(os.path.normpath(os.path.join(self.getcwd(), path)))
         files = {}
+
+        # Case where our canonical path is the root
+        if filename == "":
+            return True
 
         try:
             list_log = []
             self._connection.dir(basename, list_log.append)
             files = {' '.join(line.split()[8:]): line[0] for line in list_log}
         except Exception as e:
-            raise StorageError("remove: FTP module returned an error ({}).".format(e))
+            raise StorageError("isdir: FTP module returned an error ({}).".format(e))
 
         if not filename in files:
-            raise NotFoundError("remove: {} doesn't exist.".format(path))
+            raise NotFoundError("isdir: {} doesn't exist.".format(path))
+
+        return files[filename] == "d"
+
+    def remove(self, path):
+        if self._connection is None:
+            raise NotConnectedError("remove: you're not connected to {}.".format(self.host))
 
         try:
-            if files[filename] == "d":
+            if self.isdir(path):
                 self._connection.rmd(path)
             else:
                 self._connection.delete(path)
