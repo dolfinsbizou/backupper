@@ -186,7 +186,7 @@ class FTPStorage(AbstractStorageContext):
         except Exception as e:
             raise StorageError("remove: FTP module returned an error ({}).".format(e))
 
-    def _recursive_upload(self, current_file):
+    def _recursive_remove(self, current_file):
         """
             TODO IMPLEMENT ME
         """
