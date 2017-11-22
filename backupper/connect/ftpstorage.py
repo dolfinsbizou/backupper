@@ -160,7 +160,10 @@ class FTPStorage(AbstractStorageContext):
 
         try:
             list_log = []
-            self._connection.dir(basename, list_log.append)
+            old_cwd = self._connection.pwd()
+            self._connection.cwd(basename)
+            self._connection.dir("-a", list_log.append)
+            self._connection.cwd(old_cwd)
             files = {' '.join(line.split()[8:]): line[0] for line in list_log}
         except Exception as e:
             raise StorageError("isdir: FTP module returned an error ({}).".format(e))
