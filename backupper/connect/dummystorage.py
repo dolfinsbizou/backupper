@@ -1,4 +1,5 @@
 import os
+from binaryornot.check import is_binary
 
 from .utils import *
 
@@ -59,10 +60,69 @@ class DummyStorage(AbstractStorageContext):
             if not os.path.exists(src):
                 raise NotFoundError("upload: {} doesn't exist.".format(src))
 
-            #TODO
+            # Try to access the destination
+            dest_tree = {}
+            dest_filename = ""
+            # dest exists?
+            try:
+                # If so,
+                dest_tree = self._walk(dest)
+                # ...Is it a file? If yes, we raise an exception because we can't copy a tree in a file.
+                if not isinstance(dest_tree, dict):
+                    raise UnpermittedOperationError("upload: {} is a file.".format(dest))
+                # ...Otherwise dest/basename(src) exists?
+                if os.path.basename(src) in dest_tree:
+                    # If so we raise an error
+                    raise UnpermittedOperationError("upload: {} already exists.".format(src))
+                else:
+                    # Otherwise that's ok
+                    dest_filename = os.path.basename(src)
+            except NotFoundError:
+                # Otherwise, dirname(dest) exists?
+                try:
+                    # If so...
+                    dest_tree = self._walk(os.path.dirname(dest))
+                    # ...Is it a file? If yes, we raise an exception because we can't copy a tree in a file.
+                    if not isinstance(dest_tree, dict):
+                        raise UnpermittedOperationError("upload: {} is a file.".format(os.path.normpath(os.path.dirname(dest))))
+                    # ...Otherwise that's ok
+                    dest_filename = os.path.basename(dest)
+                except NotFoundError:
+                    # Otherwise, it's an error
+                    raise NotFoundError("upload: {} doesn't exist.".format(os.path.normpath(os.path.dirname(dest))))
 
+            # We create the according root node
+            if os.path.isdir(src):
+                dest_tree[dest_filename] = {}
+                self._recursive_upload(src, dest_tree[dest_filename])
+            else:
+                with open(src, "rb") as f:
+                    dest_tree[dest_filename] = f.read()
         else:
-            raise NotConnectedError("download: Not connected.")
+            raise NotConnectedError("upload: Not connected.")
+
+    def _recursive_upload(self, current_file, dest_tree):
+        """
+            Internal recursive upload subroutine.
+
+            When uploading a directory, recursively creates its structure.
+
+            :param current_file: The directory to upload.
+            :type current_file: str
+            :param dest_tree: Tree for the destination.
+            :type dest_tree: dict
+        """
+        for item in [os.path.join(current_file, f) for f in os.listdir(current_file)]:
+            dest_filename = os.path.basename(item)
+            if os.path.isdir(item):
+                dest_tree[dest_filename] = {}
+                self._recursive_upload(item, dest_tree[dest_filename])
+            else:
+                opening_mode = "r"
+                if is_binary(item):
+                    opening_mode+= "b"
+                with open(item, opening_mode) as f:
+                    dest_tree[dest_filename] = f.read()
 
     def download(self, src, dest="."):
         if self._connected:
@@ -106,8 +166,6 @@ class DummyStorage(AbstractStorageContext):
             :type source_tree: dict
             :param canonical_dest: Absolute path for the destination.
             :type canonical_dest: str
-
-            :raises:
         """
 
         for item in source_tree:
