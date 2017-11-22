@@ -130,3 +130,15 @@ class AbstractStorageContext(ABC):
             :return: Current distant working directory.
             :rtype: str
         """
+
+    @classmethod
+    def storage_methods(cls):
+        """
+            Retrieves a dictionary of storage methods indexed by their CONNEXION_TYPE class attribute.
+
+            If you call this method from the base abstract class AbstractStorageMethod, you will get direct inherited classes. If a given storage method has other inherited classes (who knows?), you could retrieve them by calling this method from the storage method class.
+
+            :return: CONNEXION_TYPE: corresponding_class storage methods.
+            :rtype: dict
+        """
+        return {f.CONNEXION_TYPE: f for f in cls.__subclasses__()}
