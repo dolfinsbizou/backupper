@@ -16,6 +16,11 @@ class NotConnectedError(Exception):
         Raised if you try to perform an operation while the connection hasn't been established.
     """
 
+class UnableToConnectError(Exception):
+    """
+        Raised if the connection wasn't successfully established.
+    """
+
 class NotFoundError(Exception):
     """
         Raised if a file or directory doesn't exist in the storage.
@@ -34,7 +39,7 @@ class AbstractStorageContext(ABC):
     """
 
     CONNEXION_TYPE = "unknown"
-    """Type of storage (may be FTP, SFTP, S3, etc.)."""
+    """Type of storage (may be FTP, SFTP, S3, etc.). A subclass should always redefine this class attribute."""
 
     def __init__(self):
         pass
