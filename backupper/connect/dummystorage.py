@@ -15,22 +15,7 @@ class DummyStorage(AbstractStorageContext):
     CONNEXION_TYPE = "dummy"
 
     def __init__(self):
-        self._tree = {
-            "file": "prout proéééut prout (je suis un enfant)",
-            "dir": {
-                "a": "",
-                "b": "foo",
-                "C": {
-                    "D": {
-                        "f": "Lol",
-                        "G": {
-                        }
-                    },
-                    "E": {
-                    }
-                }
-            }
-        }
+        self._tree = {}
         """Dummy file structure"""
 
         self._cwd = "/"
