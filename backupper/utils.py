@@ -54,6 +54,7 @@ def validate_configuration(configuration):
         for element in configuration["artifacts"]:
             if not isinstance(element, str):
                 raise Exception("In \"artifacts\": {} isn't a string.".format(element))
+            configuration["artifacts"] = list(map(os.path.expanduser, configuration["artifacts"]))
 
     # delete_old_backups
     if not "delete_old_backups" in configuration:
@@ -99,7 +100,7 @@ def validate_configuration(configuration):
             raise Exception("\"gnupg\" should be a list of nodes.")
         else:
             required_gnupg_options = ["keyid"]
-            default_gnupg_options = {"home": "~/.gnupg"}
+            default_gnupg_options = {"home": os.path.expanduser("~/.gnupg")}
             satisfied_gnupg_options = {k: False for k in required_gnupg_options}
             for key in configuration["gnupg"]:
                 if key in satisfied_gnupg_options:
@@ -109,6 +110,8 @@ def validate_configuration(configuration):
                 elif key in default_gnupg_options:
                     if not isinstance(configuration["gnupg"][key], str):
                         raise Exception("\"{}\" should be a string.".format(key))
+                    if key == "home":
+                        configuration["gnupg"][key] = os.path.expanduser(configuration["gnupg"][key])
                 else:
                     raise Exception("\"{}\" isn't a valid option for \"gnupg\".".format(key))
             if not all(satisfied_gnupg_options.values()):
