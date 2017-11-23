@@ -109,6 +109,9 @@ class FTPStorage(AbstractStorageContext):
                     self._connection.storbinary('STOR {}'.format(next_dest), fp)
 
     def download(self, src, dest="."):
+        #TODO Implement me
+        raise NotImplementedError("download: Method not implemented yet.")
+
         if self._connection is None:
             raise NotConnectedError("download: you're not connected to {}.".format(self.host))
 
@@ -180,6 +183,7 @@ class FTPStorage(AbstractStorageContext):
         try:
             if self.isdir(path):
                 # TODO We should recursively delete the contents of path before removing the directory, otherwise we get an error
+                raise NotImplementedError("remove: Directory deletion isn't implemented yet.")
                 self._connection.rmd(path)
             else:
                 self._connection.delete(path)
