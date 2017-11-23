@@ -42,7 +42,7 @@ setup(
     long_description = long_description("README.md"),
     license = "MIT",
     url = "https://github.com/dolfinsbizou/backupper",
-    packages = find_packages(exclude=["tests"]), # Yeah I don't have a test package (yet) but I should totally have one
+    packages = find_packages(exclude=["tests", "backupper.connect"]), # For now we exclude connect as the functionality isn't ready yet
     install_requires=requirements("requirements.txt"),
     entry_points = {
         'console_scripts': ['backupper=backupper.cli:main']
