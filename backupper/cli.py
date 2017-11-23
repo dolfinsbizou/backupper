@@ -66,10 +66,6 @@ def main():
         sys.stderr.write("Error: configuration validation: {}\n".format(e))
         sys.exit(3)
 
-    from pprint import pprint
-    pprint(configuration)
-    sys.exit(0)
-
     # The configuration file directory sets the backup context, so if it's not in the current directory, let's change the working directory
     if os.path.dirname(configuration_file) != "":
         os.chdir(os.path.dirname(configuration_file))
