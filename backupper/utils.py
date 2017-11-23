@@ -85,5 +85,37 @@ def validate_configuration(configuration):
     if not isinstance(configuration["backup_dir"], str):
         raise Exception("\"backup_dir\" should be a string.")
 
+    # encrypt
+    if not "encrypt" in configuration:
+        configuration["encrypt"] = False
+    elif configuration["encrypt"] and not "gnupg" in configuration:
+        raise Exception("\"encrypt\" is set to true, but there is no \"gnupg\".")
+
+    # gnupg
+    if configuration["encrypt"]:
+        if not "gnupg" in configuration:
+            configuration["gnupg"] = {}
+        elif not isinstance(configuration["gnupg"], dict):
+            raise Exception("\"gnupg\" should be a list of nodes.")
+        else:
+            required_gnupg_options = ["keyid"]
+            default_gnupg_options = {"home": "~/.gnupg"}
+            satisfied_gnupg_options = {k: False for k in required_gnupg_options}
+            for key in configuration["gnupg"]:
+                if key in satisfied_gnupg_options:
+                    if not isinstance(configuration["gnupg"][key], str):
+                        raise Exception("\"{}\" should be a string.".format(key))
+                    satisfied_gnupg_options[key] = True
+                elif key in default_gnupg_options:
+                    if not isinstance(configuration["gnupg"][key], str):
+                        raise Exception("\"{}\" should be a string.".format(key))
+                else:
+                    raise Exception("\"{}\" isn't a valid option for \"gnupg\".".format(key))
+            if not all(satisfied_gnupg_options.values()):
+                raise Exception("Some parameters ({}) are missing in \"gnupg\".".format(", ".join(sorted(["\"{}\"".format(k) for k in satisfied_gnupg_options if satisfied_gnupg_options[k] == False]))))
+            for key in default_gnupg_options:
+                if not key in configuration["gnupg"]:
+                    configuration["gnupg"][key] = default_gnupg_options[key]
+
 def get_version():
     return "backupper version {}".format(backupper.__version__)
