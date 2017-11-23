@@ -1,5 +1,4 @@
 * Add command line options to override YAML configuration.
-* Use ISO datetime in backup file names.
 * Add a new entrypoint allowing to perform full (and partial?) restoration from local backups.
 * Better error handling.
 * logging system.

@@ -28,7 +28,9 @@ def main():
     configuration_file = "backupfile.yml"
     configuration = None
     command_name = os.path.basename(sys.argv[0])
-    backup_datetime = datetime.datetime.utcnow().strftime('%Y%m%d%H%M%S')
+    datetime_format = "%Y-%m-%dT%H:%M:%S"
+    backup_format = r'backup_(?P<datetime_str>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})$'
+    backup_datetime = datetime.datetime.utcnow().strftime(datetime_format)
 
     ## Initialisation ##
 
@@ -158,7 +160,7 @@ def main():
             sys.stdout.write("all.\n")
 
         # Backup pattern: a backup created by this script should look like this
-        backup_pattern = re.compile(r'backup_(?P<datetime_str>[0-9]{14})$')
+        backup_pattern = re.compile(backup_format)
 
         # We discard regular files and directories that don't match the expected backup pattern
         directories = [os.path.join(configuration["backup_dir"], f) for f in os.listdir(configuration["backup_dir"]) if os.path.isdir(os.path.join(configuration["backup_dir"], f))]
@@ -176,13 +178,13 @@ def main():
         # Skip some calculation if all cleaning policies are equal to 0
         if has_cleaning_policy:
             # We associate to each backup its corresponding datetime
-            backups_datetime = [datetime.datetime.strptime(backup_pattern.search(elem).group("datetime_str"), '%Y%m%d%H%M%S') for elem in backups_list]
+            backups_datetime = [datetime.datetime.strptime(backup_pattern.search(elem).group("datetime_str"), datetime_format) for elem in backups_list]
 
             # We sort files_datetime and selected_files accordingly
             backups_datetime, backups_list = (list(t) for t in zip(*sorted(zip(backups_datetime, backups_list))))
 
             # We also need the date of our current backup
-            curr_backup_date = datetime.datetime.strptime(backup_pattern.search(actual_backup_dir).group("datetime_str"), '%Y%m%d%H%M%S').date()
+            curr_backup_date = datetime.datetime.strptime(backup_pattern.search(actual_backup_dir).group("datetime_str"), datetime_format).date()
 
             # Most recent backups
             most_recent_backups = backups_list[-configuration["cleaning_policy"]["most_recents"]:]
