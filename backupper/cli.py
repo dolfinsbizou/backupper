@@ -10,6 +10,7 @@ import re
 import yaml
 import tarfile
 import datetime
+import gnupg
 
 import backupper
 from . import utils
@@ -69,6 +70,11 @@ def main():
     if os.path.dirname(configuration_file) != "":
         os.chdir(os.path.dirname(configuration_file))
 
+    # If needed, we initialize our gpg object
+    gpg = None
+    if configuration["encrypt"]:
+        gpg = gnupg.GPG(gnupghome=configuration["gnupg"]["home"])
+
     ## Actual backups ##
 
     # Our actual backup will take place in a timestampped subdir
@@ -102,6 +108,7 @@ def main():
 
         # Build the output tar path
         output_tar = "{}.{}.tar.gz".format(os.path.join(actual_backup_dir, os.path.relpath(artifact, common_artifact_path)), backup_datetime)
+        final_output = output_tar
 
         # Create subdirectories
         try:
@@ -115,7 +122,28 @@ def main():
         with tarfile.open(output_tar, "w:gz") as tar:
             tar.add(artifact, arcname=os.path.basename(artifact))
 
-        sys.stdout.write("{} done.\n".format(output_tar))
+        # If needed, encrypt the file
+        if configuration["encrypt"]:
+            try:
+                output_gpg = "{}.gpg".format(output_tar)
+                with open(output_tar, "rb") as f:
+                    encrypt_status = gpg.encrypt_file(f, recipients=configuration["gnupg"]["keyid"], output=output_gpg)
+
+                if not encrypt_status.ok:
+                    sys.stderr.write("Grave: encrypt: gnupg returned a non ok status ({}).\n".format(encrypt_status.status))
+                    sys.stderr.write("                gpg stderr is: \n{}".format(encrypt_status.stderr))
+                else:
+                    final_output = output_gpg
+            except Exception as e:
+                sys.stderr.write("Error: encrypt: {}\n".format(e))
+                sys.exit(5)
+
+            try:
+                os.remove(output_tar)
+            except OSError as e:
+                sys.stderr.write("Grave: encrypt: unable to delete {}, non encrypted backup ({}).\n".format(output_tar, e))
+
+        sys.stdout.write("{} done.\n".format(final_output))
 
     ## Old backups cleaning ##
 
