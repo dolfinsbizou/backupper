@@ -9,12 +9,10 @@ Allows you to manage backups and encrypt them. You can then use `rclone` to stor
 ## Setup
 
 ```
-    sudo python3.6 setup.py install
-    # or, to install it for the user
-    python3.6 setup.py install --user
+    pip3 install backupper
 ```
 
-Recommended python version is 3.6. It won't work with version 3.4 and older.
+Recommended minimum python version is 3.5. It won't work with version 3.4 and older.
 
 ## Configuration reference
 
