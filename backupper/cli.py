@@ -20,8 +20,6 @@ __all__ = []
 def main():
     """
         Main entrypoint.
-
-        .. todo:: Move configuration variables somewhere else, cut this big function into smaller chunks.
     """
 
     # Configuration variables
@@ -31,17 +29,19 @@ def main():
     datetime_format = "%Y-%m-%dT%H:%M:%S"
     backup_format = r'backup_(?P<datetime_str>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2})$'
     backup_datetime = datetime.datetime.utcnow().strftime(datetime_format)
+    overrides = {}
 
     ## Initialisation ##
 
     # Fetch command line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "f:hV", ["config-file=", "help", "version"])
+        opts, args = getopt.getopt(sys.argv[1:], "f:hVb:d:", ["config-file=", "help", "version", "backup_dir=", "delete_old_backups="])
     except getopt.GetoptError as e:
         sys.stderr.write("Error: command line arguments: {}\n".format(e))
         sys.stderr.write("Try {} -h for help.\n".format(command_name))
         sys.exit(1)
 
+    # Command line options that need to be treated before loading the configuration file
     for opt, arg in opts:
         if opt in ("-h", "--help"):
             sys.stdout.write(utils.get_help(command_name, configuration_file))
@@ -61,12 +61,25 @@ def main():
         sys.stderr.write("Error: yaml parsing: {}\n".format(e))
         sys.exit(2)
 
+    # Command line options overriding the configuration file
+    for opt, arg, in opts:
+        if opt in ("-b", "--backup_dir"):
+            configuration["backup_dir"] = str(arg)
+            overrides["backup_dir"] = configuration["backup_dir"]
+        if opt in ("-d", "--delete_old_backups"):
+            configuration["delete_old_backups"] = not arg.lower() in ("false", "no", "f", "0", "")
+            overrides["delete_old_backups"] = configuration["delete_old_backups"]
+
     # Validate the configuration file
     try:
         utils.validate_configuration(configuration)
     except Exception as e:
         sys.stderr.write("Error: configuration validation: {}\n".format(e))
         sys.exit(3)
+
+    # Display info about overridden parameters
+    for override in overrides:
+        sys.stderr.write("Warning: command line argument overrides \"{}\" (value: {}).\n".format(override, overrides[override]))
 
     # The configuration file directory sets the backup context, so if it's not in the current directory, let's change the working directory
     if os.path.dirname(configuration_file) != "":

@@ -24,8 +24,10 @@ def get_help(command_name, configuration_file):
 
     help_string = """Usage: {} [OPTIONS...]
 
-  -h, --help\t\tDisplays the current help and exits.
-  -f, --config-file\tSpecifies an alternative YAML config file (default: {}).
+  -h, --help\t\t\tDisplays the current help and exits.
+  -f, --config-file\t\tSpecifies an alternative YAML config file (default: {}).
+  -b, --backup-dir\t\tSpecifies an alternative backup directory (overrides the one set in the YAML config file).
+  -d, --delete_old_backups\tIf true, will delete old backups (overrides the one set in the YAML config file).
 """.format(command_name, configuration_file)
 
     return help_string
