@@ -2,11 +2,11 @@
 
 A simple backup utility. Configurable with a YAML file.
 
-See `./backupper.py -h` for command usage.
+See `backupper -h` for command usage.
 
 Allows you to manage backups and encrypt them. You can then use `rclone` to store them on a distant storage.
 
-## Setup
+## Installation
 
 ```
     pip3 install backupper
